@@ -1,1 +1,0 @@
-![gif](https://i.imgur.com/6OxFC61.gif)
