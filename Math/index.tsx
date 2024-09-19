@@ -8,9 +8,19 @@ import { ApplicationCommandInputType, ApplicationCommandOptionType, findOption, 
 import { addPreSendListener, removePreSendListener } from "@api/MessageEvents";
 import definePlugin from "@utils/types";
 
+function Calculate(input) {
+    const sanitizedInput = input.replace(/[^-()\d/*+.]/g, '');
+
+    try {
+        return new Function(`return ${sanitizedInput}`)();
+    } catch (error) {
+        return "Invalid Expression";
+    }
+}
+
 export default definePlugin({
     name: "Math",
-    description: "The Mather.",
+    description: "Evaluates math expressions by using <math {expression}> in a message or using the /math command.",
     authors: [
         {
             name: "G1rby",
@@ -32,10 +42,11 @@ export default definePlugin({
                 },
             ],
             execute: async (args, ctx) => {
-                const equation = findOption<string>(args, "equation");
+                let equation = findOption<string>(args, "equation");
+                // @ts-ignore
+                equation = equation.replace("^", "**");
                 sendBotMessage(ctx.channel.id, {
-                    //@ts-ignore
-                    content: eval(equation),
+                    content: Calculate(equation).toString(),
                 });
             }
         },
@@ -47,8 +58,7 @@ export default definePlugin({
             const match = msg.content.match(regex);
             if (match) {
                 match[1] = match[1].replace("^", "**");
-
-                msg.content = msg.content.replace(regex, eval(match[1]));
+                msg.content = msg.content.replace(regex, Calculate(match[1]));
             }
         });
     },
